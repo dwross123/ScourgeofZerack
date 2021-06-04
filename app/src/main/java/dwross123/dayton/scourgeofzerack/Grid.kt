@@ -7,12 +7,19 @@ import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.OvalShape
 import android.graphics.drawable.shapes.RectShape
 import android.os.Bundle
+import android.os.FileUtils
 import android.view.View
 import android.widget.TextView
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
+/*import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode.Companion.SrcOver
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.graphics.drawscope.DrawContext
+import androidx.compose.ui.graphics.drawscope.Fill*/
 import dwross123.dayton.scourgeofzerack.databinding.ActivityGridBinding
 //import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 
@@ -72,17 +79,35 @@ class Grid : AppCompatActivity() {
 
         // now bitmap holds the updated pixels
 
+        //val file = FileUtils. getFile(this,selectedfileUri)
+        val bit1 = BitmapFactory.decodeResource(getResources(), R.drawable.tree)
+        val bit2 = BitmapFactory.decodeResource(getResources(), R.drawable.smudge)
+        //val bit1 = sad
+        val leftOffSet1 = 300f
+        val topOffSet1 = 300f
+        val leftOffSet2 = 600f
+        val topOffSet2 = 600f
+        canvas.drawBitmap(bit1, leftOffSet1, topOffSet1, null)
+        canvas.drawBitmap(bit2, leftOffSet2, topOffSet2, null)
+
         // set bitmap as background to ImageView
         val imageV = findViewById<View>(R.id.imageView)
         imageV.background = BitmapDrawable(getResources(), bitmap)
-    /*    val canDraw = CanvasDrawScope()
-        drawImage(
-            image: ImageBitmap,
-            topLeft: Offset,
-            alpha: Float,
-            style: DrawStyle,
-            colorFilter: ColorFilter?,
-        blendMode: BlendMode
+
+
+
+        /* unfinished beta library problems
+        val topLeftOffset = Offset(50f, 100f)
+        val drawCont = DrawContext()
+        val canDraw = CanvasDrawScope()
+        val halfGhost = .5f //half transparent
+        canDraw.drawImage(
+            bitmap.asImageBitmap(),
+            topLeftOffset,
+            halfGhost,
+            Fill,
+            null,
+            SrcOver
         )*/
         //git is fussy
     }
