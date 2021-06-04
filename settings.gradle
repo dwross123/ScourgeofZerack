@@ -1,0 +1,2 @@
+rootProject.name = "Scourge of Zerack"
+include ':app'
