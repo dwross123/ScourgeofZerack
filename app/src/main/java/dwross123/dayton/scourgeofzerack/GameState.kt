@@ -11,6 +11,7 @@ class GameState (val playerCount: Int, val grid: Grid){
     var cities = ArrayList<City>()
     var playerTurn = 0
     var hasMove = HashSet<Any>()
+    var gameOver = false
 
     fun findNearby(xPos: Float, yPos: Float):Clickable?{ //Biased towards units
         val areaChecked = 50f
@@ -82,6 +83,7 @@ class GameState (val playerCount: Int, val grid: Grid){
     private fun razeCity(city: City){
         cities.remove(city)
         if(checkFactionEliminated(city.player)){
+            gameOver=true
             //(TODO)remove player control/set feral once MP
             grid.endGame((city.player+1)%2)
         }
@@ -121,6 +123,7 @@ class GameState (val playerCount: Int, val grid: Grid){
     }
     //Who's move
     fun setTurn(player: Int){
+        if(gameOver) return
         hasMove.clear()
         runProduction(player)
         initializeMovement(player)
@@ -167,6 +170,7 @@ class GameState (val playerCount: Int, val grid: Grid){
                     continue
                 }
                 if(city.productionProgress == 3){
+                    //humanProd
                     createUnit(city.xPos, city.yPos, 0, Faction.HUMAN)
                     city.productionProgress = 0
                 }else city.productionProgress++

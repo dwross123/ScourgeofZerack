@@ -60,8 +60,8 @@ class Grid : AppCompatActivity() {
         gameState.createCity(100f, 350f, 0, Faction.HUMAN)
         gameState.createCity(800f, 350f, 1, Faction.UNDEAD)
         gameState.createUnit(100f, 350f, 0, Faction.HUMAN)
-        for(i in 1..4){
-            for(j in 1..1){
+        for(i in 1..3){
+            for(j in 1..3){
                 gameState.createUnit((500f+(i*100)), (150f+(j*100)), 1, Faction.UNDEAD)
             }
         }
