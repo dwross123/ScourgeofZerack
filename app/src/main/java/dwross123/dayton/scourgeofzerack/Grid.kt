@@ -9,6 +9,8 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import dwross123.dayton.scourgeofzerack.databinding.ActivityGridBinding
 import android.widget.Toast
+import java.time.LocalDateTime
+import java.util.*
 
 
 class Grid : AppCompatActivity() {
@@ -20,10 +22,11 @@ class Grid : AppCompatActivity() {
     private lateinit var humanWarrior: Bitmap
     private lateinit var undeadCity: Bitmap
     private lateinit var undeadWarrior: Bitmap
-    private lateinit var canvas: Canvas
+    lateinit var canvas: Canvas
     private var width =0
     private var height =0
     private var selected :Any? = null
+    private var lastClickTime = System.currentTimeMillis()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +59,11 @@ class Grid : AppCompatActivity() {
         gameState.createCity(100f, 350f, 0, Faction.HUMAN)
         gameState.createCity(800f, 350f, 1, Faction.UNDEAD)
         gameState.createUnit(100f, 350f, 0, Faction.HUMAN)
+        for(i in 1..4){
+            for(j in 1..4){
+                gameState.createUnit((500f+(i*100)), (150f+(j*100)), 1, Faction.UNDEAD)
+            }
+        }
         drawGameState()
     }
 
@@ -63,6 +71,11 @@ class Grid : AppCompatActivity() {
 
     }*/
     override fun onTouchEvent(e: MotionEvent): Boolean {
+        val timeSinceClick = System.currentTimeMillis()-lastClickTime
+        lastClickTime = System.currentTimeMillis()
+        if (timeSinceClick< 250){
+            return true
+        }
         val xPos: Float = e.x
         val yPos: Float = e.y
         if(selected != null && selected is Unit){

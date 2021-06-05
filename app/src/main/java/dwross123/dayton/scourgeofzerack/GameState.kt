@@ -2,6 +2,7 @@ package dwross123.dayton.scourgeofzerack
 
 import android.util.Log
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 
 class GameState (val playerCount: Int, val grid: Grid){
@@ -9,6 +10,7 @@ class GameState (val playerCount: Int, val grid: Grid){
     var units = ArrayList<Unit>()
     var cities = ArrayList<City>()
     private var playerTurn = 0
+    var hasMove = HashSet<Any>()
 
     fun findNearby(xPos: Float, yPos: Float):Any?{ //Biased towards units
         val areaChecked = 50f
@@ -24,15 +26,22 @@ class GameState (val playerCount: Int, val grid: Grid){
     }
     fun move(unit:Unit, xPos:Float, yPos:Float) :Boolean{
         Log.w("GameState" ,"unit move attempt $xPos, $yPos")
-        var xDist = (unit.xPos-xPos)*(unit.xPos-xPos)
-        var yDist = (unit.xPos-yPos)*(unit.xPos-yPos)
-        val dist = sqrt(xDist+yDist)
         var finalXPos = xPos
         var finalYPos = yPos
+        if(xPos<(unit.size/2)) finalXPos=(unit.size/2)
+        if(yPos<(unit.size/2)) finalYPos=(unit.size/2)
+        val maxX = grid.canvas.width-(unit.size/2)
+        val maxY = grid.canvas.height-(unit.size/2)
+        if(xPos>maxX) finalXPos=maxX
+        if(yPos>maxY) finalYPos=maxY
+        var xDist = (unit.xPos-finalXPos)*(unit.xPos-finalXPos)
+        var yDist = (unit.xPos-finalYPos)*(unit.xPos-finalYPos)
+        val dist = sqrt(xDist+yDist)
+
         if(dist>unit.speed){
             val proportion = unit.speed/dist
-            val xMove = (xPos-unit.xPos)*proportion
-            val yMove = (yPos-unit.yPos)*proportion
+            val xMove = (finalXPos-unit.xPos)*proportion
+            val yMove = (finalYPos-unit.yPos)*proportion
             finalXPos = unit.xPos+xMove
             finalYPos = unit.yPos+yMove
         }
@@ -59,6 +68,10 @@ class GameState (val playerCount: Int, val grid: Grid){
         unit.xPos = finalXPos
         unit.yPos = finalYPos
         grid.drawGameState()
+        if(unit.faction != Faction.UNDEAD){
+            hasMove.remove(unit)
+            if(hasMove.isEmpty()) setTurn(1)//Make AI turn
+        }
         return true
     }
 
@@ -106,10 +119,40 @@ class GameState (val playerCount: Int, val grid: Grid){
         return false
     }
     //Who's move
-
+    fun setTurn(player: Int){
+        hasMove.clear()
+        initializeMovement(player)
+        if(player==1) {//If is AI
+            runAIMovement(player)
+        }
+    }
+    private fun initializeMovement(player: Int){
+        for (unit in units){
+            if(unit.player == player){
+                hasMove.add(unit)
+            }
+        }
+    }
+    private fun runAIMovement(player: Int){
+        for(unit in hasMove){
+            if (unit is Unit){
+                for( i in 1..10) {
+                    var dx = Random.nextFloat() - .5f
+                    var dy = Random.nextFloat() - .5f
+                    var dist = (dx * dx) + (dy * dy)
+                    dist = sqrt(dist)
+                    dx = dx * unit.speed / dist
+                    dy = dy * unit.speed / dist
+                    if(move(unit, unit.xPos + dx, unit.yPos + dy)){
+                        break
+                    }
+                }
+            }
+        }
+        setTurn(0)
+    }
 
     //Who has movement left
-    //todo hash table for units with movement
 
     //Creation
     fun createUnit(xPos: Float, yPos: Float, player: Int, faction: Faction){
