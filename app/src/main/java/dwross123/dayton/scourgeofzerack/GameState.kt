@@ -191,9 +191,6 @@ class GameState (val playerCount: Int, val grid: Grid){
             }
         }
     }
-
-    //Who has movement left
-
     //Creation
     fun createUnit(xPos: Float, yPos: Float, player: Int, faction: Faction){
         val unit = Unit(xPos, yPos, player, faction)
