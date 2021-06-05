@@ -10,10 +10,9 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.MotionEvent
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import dwross123.dayton.scourgeofzerack.databinding.ActivityGridBinding
-import android.widget.Toast
-import java.time.LocalDateTime
 import java.util.*
 
 
@@ -44,31 +43,22 @@ class Grid : AppCompatActivity() {
 
         width = displayMetrics.widthPixels
         height = displayMetrics.heightPixels
-        humanCity = BitmapFactory.decodeResource(getResources(), R.drawable.h_city_idle_1) //size 337x309
-        humanWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.warrior_idle_1) //size 158x158
-        undeadCity = BitmapFactory.decodeResource(getResources(), R.drawable.z_city_idle_1) //size 337x309
-        undeadWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.basic_undead_idle1) //size 158x158
-        Log.w("Grid" ,"undead 1 ${undeadWarrior.height}  ${undeadWarrior.width}")
-        Log.w("Grid" ,"undead City 1 ${undeadCity.height}  ${undeadCity.width}")
-        Log.w("Grid" ,"Human 1 ${humanWarrior.height}  ${humanWarrior.width}")
-        Log.w("Grid" ,"Human City 1 ${humanCity.height}  ${humanCity.width}")
-        //val file = FileUtils. getFile(this,selectedfileUri)
-
-/*        val leftOffSet1 = 300f
-        val topOffSet1 = 300f
-        val leftOffSet2 = 350f
-        val topOffSet2 = 350f
-        canvas.drawBitmap(bit1, leftOffSet1, topOffSet1, null)
-        canvas.drawBitmap(bit2, leftOffSet2, topOffSet2, null)*/
+        humanCity = BitmapFactory.decodeResource(getResources(), R.drawable.h_city_idle_1)
+        humanWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.warrior_idle_1)
+        undeadCity = BitmapFactory.decodeResource(getResources(), R.drawable.z_city_idle_1)
+        undeadWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.basic_undead_idle1)
 
         // set bitmap as background to ImageView
         imageV = findViewById<ImageView>(R.id.imageView)
-        gameState.createCity(100f, 350f, 0, Faction.HUMAN)
-        gameState.createCity(800f, 350f, 1, Faction.UNDEAD)
-        gameState.createUnit(100f, 350f, 0, Faction.HUMAN)
-        for(i in 1..3){
-            for(j in 1..3){
-                gameState.createUnit((500f+(i*100)), (150f+(j*100)), 1, Faction.UNDEAD)
+        val cityOffSetX = 100f
+        val unitOffSetX = 137.5f
+        val offSetY = height/2f
+        gameState.createCity(cityOffSetX, offSetY, 0, Faction.HUMAN)
+        gameState.createCity(width-cityOffSetX, offSetY, 1, Faction.UNDEAD)
+        gameState.createUnit(unitOffSetX, offSetY, 0, Faction.HUMAN)
+        for(i in -1..1){
+            for(j in -1..1){
+                gameState.createUnit((width-unitOffSetX+(i*100f)), (offSetY+(j*100f)), 1, Faction.UNDEAD)
             }
         }
         drawGameState()
@@ -118,8 +108,9 @@ class Grid : AppCompatActivity() {
         //drawTerrain()
         drawCities()
         drawUnits()
+        drawKills()
         drawMovable()
-        drawselected()
+        drawSelected()
         imageV.background = BitmapDrawable(getResources(), bitmap)
         imageV.invalidate()
     }
@@ -146,7 +137,7 @@ class Grid : AppCompatActivity() {
             }
         }
     }
-    private fun drawselected(){
+    private fun drawSelected(){
         val thing = selected
         if(thing != null) {
             drawBorder(thing, Color.GREEN)
@@ -170,11 +161,21 @@ class Grid : AppCompatActivity() {
         shapeDrawable.getPaint().setStyle(Paint.Style.STROKE)
         shapeDrawable.draw(canvas)
     }
+    private fun drawKills(){
+        val paint = Paint()
+        paint.color = Color.GREEN
+        paint.style = Paint.Style.FILL
+        paint.setTextSize(20f)
+        canvas.drawText("Zombies killed ${gameState.zombiesKilled}", 0f, height-paint.textSize, paint)
+        paint.color = Color.RED
+        canvas.drawText("Warriors lost ${gameState.warriorsLost}", 200f, height-paint.textSize, paint)
+    }
     fun endGame(player:Int){
         val intent = Intent(this, Main::class.java).apply {
+            val casualties = "\nYou Killed ${gameState.zombiesKilled} zombies and lost ${gameState.warriorsLost} Warriors"
             var message = if(player==0){
-                "Congratulations you won!"
-            } else "You have been overrun by the undead!"
+                "Congratulations you won!$casualties"
+            } else "You have been overrun by the undead!$casualties"
             putExtra(EXTRA_MESSAGE, message)
         }
         startActivity(intent)

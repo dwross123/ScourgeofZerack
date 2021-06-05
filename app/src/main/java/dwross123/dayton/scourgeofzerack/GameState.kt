@@ -12,6 +12,8 @@ class GameState (val playerCount: Int, val grid: Grid){
     var playerTurn = 0
     var hasMove = HashSet<Clickable>()
     var gameOver = false
+    var zombiesKilled = 0
+    var warriorsLost = 0
 
     fun findNearby(xPos: Float, yPos: Float):Clickable?{ //Biased towards units
         val areaChecked = 50f
@@ -78,6 +80,9 @@ class GameState (val playerCount: Int, val grid: Grid){
     }
 
     private fun killUnit(unit: Unit){
+        if(unit.player==1){
+            zombiesKilled++
+        }else warriorsLost++
         units.remove(unit)
     }
     private fun razeCity(city: City){
