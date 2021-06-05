@@ -1,5 +1,6 @@
 package dwross123.dayton.scourgeofzerack
 
+import android.util.Log
 import kotlin.math.sqrt
 
 
@@ -7,9 +8,22 @@ class GameState (val playerCount: Int, val grid: Grid){
 
     var units = ArrayList<Unit>()
     var cities = ArrayList<City>()
-    var playerTurn = 0
+    private var playerTurn = 0
 
+    fun findNearby(xPos: Float, yPos: Float):Any?{ //Biased towards units
+        val areaChecked = 50f
+        val unit = checkPotentialUnitIntersections(null, areaChecked, xPos-(areaChecked/2), yPos-(areaChecked/2))
+        if(unit != null){
+            return unit
+        }
+        val city = checkPotentialCityIntersections(areaChecked, xPos-(areaChecked/2), yPos-(areaChecked/2))
+        if(city != null){
+            return city
+        }
+        return null
+    }
     fun move(unit:Unit, xPos:Float, yPos:Float) :Boolean{
+        Log.w("GameState" ,"unit move attempt $xPos, $yPos")
         var xDist = (unit.xPos-xPos)*(unit.xPos-xPos)
         var yDist = (unit.xPos-yPos)*(unit.xPos-yPos)
         val dist = sqrt(xDist+yDist)
@@ -22,8 +36,9 @@ class GameState (val playerCount: Int, val grid: Grid){
             finalXPos = unit.xPos+xMove
             finalYPos = unit.yPos+yMove
         }
-        val impactedUnit = checkPotentialUnitIntersections(unit.size, finalXPos, finalYPos)
+        val impactedUnit = checkPotentialUnitIntersections(unit, unit.size, finalXPos, finalYPos)
         if(impactedUnit!=null){
+            Log.w("GameState" ,"UNIT IMPACT!?!?!?!?!? $xPos, $yPos")
             if(unit.team==impactedUnit.team){
                 //reject move
                 //TODO snap to position
@@ -35,6 +50,7 @@ class GameState (val playerCount: Int, val grid: Grid){
         }else {
             val impactedCity = checkPotentialCityIntersections(unit.size, finalXPos, finalYPos)
             if(impactedCity!=null){
+                Log.w("GameState" ,"city impact $xPos, $yPos")
                 if(unit.team!=impactedCity.team){
                     razeCity(impactedCity)
                 }
@@ -64,19 +80,22 @@ class GameState (val playerCount: Int, val grid: Grid){
     }
 
     //intersect
-    fun checkPotentialUnitIntersections(size1: Float, left1: Float, top1: Float):Unit?{
+    private fun checkPotentialUnitIntersections(inboundUnit:Unit?, size1: Float, left1: Float, top1: Float):Unit?{
         for(unit in units){
+            if(unit == inboundUnit){
+                continue
+            }
             if(intersect(size1, left1, top1, unit.size, unit.xPos, unit.yPos)) return unit
         }
         return null
     }
-    fun checkPotentialCityIntersections(size1: Float, left1: Float, top1: Float):City?{
+    private fun checkPotentialCityIntersections(size1: Float, left1: Float, top1: Float):City?{
         for(city in cities){
             if(intersect(size1, left1, top1, city.size, city.xPos, city.yPos)) return city
         }
         return null
     }
-    fun intersect(size1: Float, left1: Float, top1: Float, size2: Float, left2: Float, top2: Float): Boolean {
+    private fun intersect(size1: Float, left1: Float, top1: Float, size2: Float, left2: Float, top2: Float): Boolean {
         val right1 = left1 + size1
         val bottom1 = top1 + size1
         val right2 = left2 + size2
@@ -95,7 +114,7 @@ class GameState (val playerCount: Int, val grid: Grid){
     //Creation
     fun createUnit(xPos: Float, yPos: Float, player: Int, faction: Faction){
         val unit = Unit(xPos, yPos, player, faction)
-        if(checkPotentialUnitIntersections(unit.size, xPos, yPos)==null) {
+        if(checkPotentialUnitIntersections(null, unit.size, xPos, yPos)==null) {
             units.add(unit)
         } //Todo have unit move off city
     }

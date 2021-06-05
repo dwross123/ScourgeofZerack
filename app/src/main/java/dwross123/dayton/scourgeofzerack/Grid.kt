@@ -1,28 +1,29 @@
 package dwross123.dayton.scourgeofzerack
 
 import android.graphics.*
-import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
-import android.os.FileUtils
 import android.util.DisplayMetrics
-import android.view.View
+import android.view.MotionEvent
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import dwross123.dayton.scourgeofzerack.databinding.ActivityGridBinding
-import kotlin.Unit
+import android.widget.Toast
 
 
 class Grid : AppCompatActivity() {
 
     private lateinit var binding: ActivityGridBinding
-    lateinit var imageV:ImageView
-    val gameState = GameState(2, this)
-    lateinit var bit1: Bitmap
-    lateinit var bit2: Bitmap
-    lateinit var canvas: Canvas
-    var width =0
-    var height =0
+    private lateinit var imageV:ImageView
+    private val gameState = GameState(2, this)
+    private lateinit var humanCity: Bitmap
+    private lateinit var humanWarrior: Bitmap
+    private lateinit var undeadCity: Bitmap
+    private lateinit var undeadWarrior: Bitmap
+    private lateinit var canvas: Canvas
+    private var width =0
+    private var height =0
+    private var selected :Any? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,8 +37,10 @@ class Grid : AppCompatActivity() {
 
         width = displayMetrics.widthPixels
         height = displayMetrics.heightPixels
-        bit1 = BitmapFactory.decodeResource(getResources(), R.drawable.smudge) //size 337x309
-        bit2 = BitmapFactory.decodeResource(getResources(), R.drawable.tree) //size 158x158
+        humanCity = BitmapFactory.decodeResource(getResources(), R.drawable.h_city_idle_1) //size 337x309
+        humanWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.warrior_idle_1) //size 158x158
+        undeadCity = BitmapFactory.decodeResource(getResources(), R.drawable.z_city_idle_1) //size 337x309
+        undeadWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.basic_undead_idle1) //size 158x158
 
         //val file = FileUtils. getFile(this,selectedfileUri)
 
@@ -51,7 +54,7 @@ class Grid : AppCompatActivity() {
         // set bitmap as background to ImageView
         imageV = findViewById<ImageView>(R.id.imageView)
         gameState.createCity(100f, 350f, 0, Faction.HUMAN)
-        gameState.createCity(800f, 350f, 0, Faction.ZOMBIE)
+        gameState.createCity(800f, 350f, 1, Faction.UNDEAD)
         gameState.createUnit(100f, 350f, 0, Faction.HUMAN)
         drawGameState()
     }
@@ -59,7 +62,29 @@ class Grid : AppCompatActivity() {
 /*    fun moveSelected(unit: Unit) {
 
     }*/
+    override fun onTouchEvent(e: MotionEvent): Boolean {
+        val xPos: Float = e.x
+        val yPos: Float = e.y
+        if(selected != null && selected is Unit){
+            gameState.move(selected as Unit, xPos, yPos)
+            Toast.makeText(applicationContext,"x = $xPos y = $yPos",Toast.LENGTH_SHORT).show()
+            return true
+        }
+        //Toast.makeText(applicationContext,"x = $xPos y = $yPos",Toast.LENGTH_LONG).show()
+        var left = e.x-10
+        var top = e.y-10
+        var right = e.x+10
+        var bottom = e.y+10
 
+        // draw oval shape to canvas
+        /*var shapeDrawable = ShapeDrawable(OvalShape())
+        shapeDrawable.setBounds( left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+        shapeDrawable.getPaint().setColor(Color.parseColor("#009191"))
+        shapeDrawable.draw(canvas)*/
+        selected = gameState.findNearby(xPos, yPos) //Biased towards units
+        imageV.invalidate()   
+        return true
+    }
     fun drawGameState(){
         val bitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         canvas = Canvas(bitmap)
@@ -69,18 +94,27 @@ class Grid : AppCompatActivity() {
         imageV.background = BitmapDrawable(getResources(), bitmap)
         imageV.invalidate()
     }
-
     private fun drawTerrain(){
         //TODO terrain
     }
     private fun drawCities(){
         for (city in gameState.cities){
-            canvas.drawBitmap(bit1, city.xPos, city.yPos, null)
+            val left = city.xPos-(city.size/2f)
+            val top = city.yPos-(city.size/2f)
+            when (city.faction) {
+                Faction.HUMAN -> canvas.drawBitmap(humanCity, left, top, null)
+                Faction.UNDEAD -> canvas.drawBitmap(undeadCity, left, top, null)
+            }
         }
     }
     private fun drawUnits(){
         for (unit in gameState.units){
-            canvas.drawBitmap(bit2, unit.xPos, unit.yPos, null)
+            val left = unit.xPos-(unit.size/2f)
+            val top = unit.yPos-(unit.size/2f)
+            when (unit.faction) {
+                Faction.HUMAN -> canvas.drawBitmap(humanWarrior, left, top, null)
+                Faction.UNDEAD -> canvas.drawBitmap(undeadWarrior, left, top, null)
+            }
         }
     }
 }
