@@ -10,7 +10,7 @@ class GameState (val playerCount: Int, val grid: Grid){
     var units = ArrayList<Unit>()
     var cities = ArrayList<City>()
     var playerTurn = 0
-    var hasMove = HashSet<Any>()
+    var hasMove = HashSet<Clickable>()
     var gameOver = false
 
     fun findNearby(xPos: Float, yPos: Float):Clickable?{ //Biased towards units
@@ -45,7 +45,7 @@ class GameState (val playerCount: Int, val grid: Grid){
             val yMove = (finalYPos-unit.yPos)*proportion
             finalXPos = unit.xPos+xMove
             finalYPos = unit.yPos+yMove
-            Log.w("GameState" ,"unit move attempt $dist, $proportion, $xPos, $yPos, ${unit.xPos}, ${unit.yPos}, $finalXPos, $finalYPos, ${unit.player}")
+            //Log.w("GameState" ,"unit move attempt $dist, $proportion, $xPos, $yPos, ${unit.xPos}, ${unit.yPos}, $finalXPos, $finalYPos, ${unit.player}")
         }
         val impactedUnit = checkPotentialUnitIntersections(unit, unit.size, finalXPos, finalYPos)
         if(impactedUnit!=null){
@@ -62,7 +62,7 @@ class GameState (val playerCount: Int, val grid: Grid){
             val impactedCity = checkPotentialCityIntersections(unit.size, finalXPos, finalYPos)
             if(impactedCity!=null){
                 if(unit.team!=impactedCity.team){
-                    Log.w("GameState" ,"city impact $xPos, $yPos")
+                    //Log.w("GameState" ,"city impact $xPos, $yPos")
                     razeCity(impactedCity)
                 }
             }
@@ -130,11 +130,11 @@ class GameState (val playerCount: Int, val grid: Grid){
         if(player==1) {//If is AI
             runAIMovement(player)
         }
-        Log.w("GameState" , "hasMove $hasMove.size")
+        //Log.w("GameState" , "hasMove $hasMove.size")
         if (hasMove.isEmpty()){
-            Log.w("GameState" , "hasMove empty")
+            //Log.w("GameState" , "hasMove empty")
             setTurn((player+1)%playerCount)
-            Log.w("GameState" , "Recursive call completed")
+            //Log.w("GameState" , "Recursive call completed")
         }
         grid.imageV.invalidate()
     }
@@ -181,7 +181,8 @@ class GameState (val playerCount: Int, val grid: Grid){
                 if (city.player != player){
                     continue
                 }
-                for(i in 1..2) createUnit(city.xPos, city.yPos+(-150f+100f*i), 1, Faction.UNDEAD)
+                //for(i in 1..2) yPos+(-150f+100f*i) //for doable production
+                createUnit(city.xPos, city.yPos, 1, Faction.UNDEAD)
             }
         }
     }

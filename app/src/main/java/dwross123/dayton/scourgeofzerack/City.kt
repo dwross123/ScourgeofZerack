@@ -1,8 +1,8 @@
 package dwross123.dayton.scourgeofzerack
 
-class City(val xPos: Float, val yPos: Float, override val player: Int, val faction: Faction):Clickable{
+class City(override var xPos: Float, override var yPos: Float, override val player: Int, override val faction: Faction):Clickable{
     //xPos, yPos is of center
-    var size =100f
+    override var size =150f
     val team =player
     var productionProgress =0
     val clickableType = ClickableType.CITY

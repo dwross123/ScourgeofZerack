@@ -3,8 +3,11 @@ package dwross123.dayton.scourgeofzerack
 import android.content.Intent
 import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.RectShape
 import android.os.Bundle
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.MotionEvent
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -45,7 +48,10 @@ class Grid : AppCompatActivity() {
         humanWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.warrior_idle_1) //size 158x158
         undeadCity = BitmapFactory.decodeResource(getResources(), R.drawable.z_city_idle_1) //size 337x309
         undeadWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.basic_undead_idle1) //size 158x158
-
+        Log.w("Grid" ,"undead 1 ${undeadWarrior.height}  ${undeadWarrior.width}")
+        Log.w("Grid" ,"undead City 1 ${undeadCity.height}  ${undeadCity.width}")
+        Log.w("Grid" ,"Human 1 ${humanWarrior.height}  ${humanWarrior.width}")
+        Log.w("Grid" ,"Human City 1 ${humanCity.height}  ${humanCity.width}")
         //val file = FileUtils. getFile(this,selectedfileUri)
 
 /*        val leftOffSet1 = 300f
@@ -82,6 +88,7 @@ class Grid : AppCompatActivity() {
         val yPos: Float = e.y
         if(selected != null && selected is Unit){
             if(gameState.move(selected as Unit, xPos, yPos)) selected = null
+            drawGameState()
             Toast.makeText(applicationContext,"x = $xPos y = $yPos",Toast.LENGTH_SHORT).show()
             return true
         }
@@ -102,7 +109,7 @@ class Grid : AppCompatActivity() {
             if (thing.player != gameState.playerTurn) selected = null
             if (!gameState.hasMove.contains(thing)) selected = null
         }
-        imageV.invalidate()   
+        drawGameState()
         return true
     }
     fun drawGameState(){
@@ -111,6 +118,8 @@ class Grid : AppCompatActivity() {
         //drawTerrain()
         drawCities()
         drawUnits()
+        drawMovable()
+        drawselected()
         imageV.background = BitmapDrawable(getResources(), bitmap)
         imageV.invalidate()
     }
@@ -136,6 +145,30 @@ class Grid : AppCompatActivity() {
                 Faction.UNDEAD -> canvas.drawBitmap(undeadWarrior, left, top, null)
             }
         }
+    }
+    private fun drawselected(){
+        val thing = selected
+        if(thing != null) {
+            drawBorder(thing, Color.GREEN)
+        }
+    }
+    private fun drawMovable(){
+        for(target in gameState.hasMove){
+            drawBorder(target, Color.BLUE)
+        }
+    }
+    private fun drawBorder(target: Clickable, color: Int){
+        var left = (target.xPos - (target.size / 2)).toInt()
+        var top = (target.yPos - (target.size / 2)).toInt()
+        var right = (target.xPos + (target.size / 2)).toInt()
+        var bottom = (target.yPos + (target.size / 2)).toInt()
+
+        // draw rectangle shape to canvas
+        var shapeDrawable = ShapeDrawable(RectShape())
+        shapeDrawable.setBounds(left, top, right, bottom)
+        shapeDrawable.getPaint().setColor(color)
+        shapeDrawable.getPaint().setStyle(Paint.Style.STROKE)
+        shapeDrawable.draw(canvas)
     }
     fun endGame(player:Int){
         val intent = Intent(this, Main::class.java).apply {
