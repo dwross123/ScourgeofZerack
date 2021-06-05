@@ -6,4 +6,5 @@ interface Clickable {
     var xPos: Float
     var yPos: Float
     var size: Float
+    var speed: Float
 }

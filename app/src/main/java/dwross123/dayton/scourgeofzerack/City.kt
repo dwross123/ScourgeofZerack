@@ -6,4 +6,5 @@ class City(override var xPos: Float, override var yPos: Float, override val play
     val team =player
     var productionProgress =0
     val clickableType = ClickableType.CITY
+    override var speed =0f //NO!
 }

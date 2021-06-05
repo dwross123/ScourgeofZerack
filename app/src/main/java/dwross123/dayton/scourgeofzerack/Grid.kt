@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
 import android.graphics.drawable.shapes.RectShape
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -56,8 +57,8 @@ class Grid : AppCompatActivity() {
         gameState.createCity(cityOffSetX, offSetY, 0, Faction.HUMAN)
         gameState.createCity(width-cityOffSetX, offSetY, 1, Faction.UNDEAD)
         gameState.createUnit(unitOffSetX, offSetY, 0, Faction.HUMAN)
-        for(i in -1..1){
-            for(j in -1..1){
+        for(i in -3..1){
+            for(j in -2..2){
                 gameState.createUnit((width-unitOffSetX+(i*100f)), (offSetY+(j*100f)), 1, Faction.UNDEAD)
             }
         }
@@ -108,6 +109,7 @@ class Grid : AppCompatActivity() {
         //drawTerrain()
         drawCities()
         drawUnits()
+        drawRage()
         drawKills()
         drawMovable()
         drawSelected()
@@ -148,18 +150,27 @@ class Grid : AppCompatActivity() {
             drawBorder(target, Color.BLUE)
         }
     }
+    private fun drawRage(){
+        for (unit in gameState.units){
+            when (unit.faction) {
+                Faction.HUMAN -> continue
+                Faction.UNDEAD -> drawBorder(unit, Color.RED)
+            }
+        }
+    }
     private fun drawBorder(target: Clickable, color: Int){
-        var left = (target.xPos - (target.size / 2)).toInt()
-        var top = (target.yPos - (target.size / 2)).toInt()
-        var right = (target.xPos + (target.size / 2)).toInt()
-        var bottom = (target.yPos + (target.size / 2)).toInt()
-
-        // draw rectangle shape to canvas
-        var shapeDrawable = ShapeDrawable(RectShape())
-        shapeDrawable.setBounds(left, top, right, bottom)
-        shapeDrawable.getPaint().setColor(color)
-        shapeDrawable.getPaint().setStyle(Paint.Style.STROKE)
-        shapeDrawable.draw(canvas)
+        drawShape(ShapeDrawable(RectShape()), color, target.size/2, target)
+        drawShape(ShapeDrawable(OvalShape()), color, (target.size/2)+target.speed, target)
+    }
+    private fun drawShape(shape: ShapeDrawable, color: Int, size: Float, target:Clickable){//size is predivided
+        var left = (target.xPos - size).toInt()
+        var top = (target.yPos - size).toInt()
+        var right = (target.xPos + size).toInt()
+        var bottom = (target.yPos + size).toInt()
+        shape.setBounds(left, top, right, bottom)
+        shape.getPaint().setColor(color)
+        shape.getPaint().setStyle(Paint.Style.STROKE)
+        shape.draw(canvas)
     }
     private fun drawKills(){
         val paint = Paint()
