@@ -1,5 +1,6 @@
 package dwross123.dayton.scourgeofzerack
 
+import android.content.Intent
 import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
@@ -15,18 +16,18 @@ import java.util.*
 
 class Grid : AppCompatActivity() {
 
-    private lateinit var binding: ActivityGridBinding
-    private lateinit var imageV:ImageView
-    private val gameState = GameState(2, this)
-    private lateinit var humanCity: Bitmap
-    private lateinit var humanWarrior: Bitmap
-    private lateinit var undeadCity: Bitmap
-    private lateinit var undeadWarrior: Bitmap
+    lateinit var binding: ActivityGridBinding
+    lateinit var imageV:ImageView
+    val gameState = GameState(2, this)
+    lateinit var humanCity: Bitmap
+    lateinit var humanWarrior: Bitmap
+    lateinit var undeadCity: Bitmap
+    lateinit var undeadWarrior: Bitmap
     lateinit var canvas: Canvas
-    private var width =0
-    private var height =0
-    private var selected :Any? = null
-    private var lastClickTime = System.currentTimeMillis()
+    var width =0
+    var height =0
+    var selected :Clickable? = null
+    var lastClickTime = System.currentTimeMillis()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,11 +61,12 @@ class Grid : AppCompatActivity() {
         gameState.createCity(800f, 350f, 1, Faction.UNDEAD)
         gameState.createUnit(100f, 350f, 0, Faction.HUMAN)
         for(i in 1..4){
-            for(j in 1..4){
+            for(j in 1..1){
                 gameState.createUnit((500f+(i*100)), (150f+(j*100)), 1, Faction.UNDEAD)
             }
         }
         drawGameState()
+        gameState.setTurn(0)
     }
 
 /*    fun moveSelected(unit: Unit) {
@@ -79,7 +81,7 @@ class Grid : AppCompatActivity() {
         val xPos: Float = e.x
         val yPos: Float = e.y
         if(selected != null && selected is Unit){
-            gameState.move(selected as Unit, xPos, yPos)
+            if(gameState.move(selected as Unit, xPos, yPos)) selected = null
             Toast.makeText(applicationContext,"x = $xPos y = $yPos",Toast.LENGTH_SHORT).show()
             return true
         }
@@ -95,6 +97,11 @@ class Grid : AppCompatActivity() {
         shapeDrawable.getPaint().setColor(Color.parseColor("#009191"))
         shapeDrawable.draw(canvas)*/
         selected = gameState.findNearby(xPos, yPos) //Biased towards units
+        val thing:Clickable? = selected
+        if(thing != null){
+            if (thing.player != gameState.playerTurn) selected = null
+            if (!gameState.hasMove.contains(thing)) selected = null
+        }
         imageV.invalidate()   
         return true
     }
@@ -129,5 +136,14 @@ class Grid : AppCompatActivity() {
                 Faction.UNDEAD -> canvas.drawBitmap(undeadWarrior, left, top, null)
             }
         }
+    }
+    fun endGame(player:Int){
+        val intent = Intent(this, Main::class.java).apply {
+            var message = if(player==0){
+                "Congratulations you won!"
+            } else "You have been overrun by the undead!"
+            putExtra(EXTRA_MESSAGE, message)
+        }
+        startActivity(intent)
     }
 }

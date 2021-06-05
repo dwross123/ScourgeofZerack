@@ -9,10 +9,10 @@ class GameState (val playerCount: Int, val grid: Grid){
 
     var units = ArrayList<Unit>()
     var cities = ArrayList<City>()
-    private var playerTurn = 0
+    var playerTurn = 0
     var hasMove = HashSet<Any>()
 
-    fun findNearby(xPos: Float, yPos: Float):Any?{ //Biased towards units
+    fun findNearby(xPos: Float, yPos: Float):Clickable?{ //Biased towards units
         val areaChecked = 50f
         val unit = checkPotentialUnitIntersections(null, areaChecked, xPos-(areaChecked/2), yPos-(areaChecked/2))
         if(unit != null){
@@ -25,7 +25,7 @@ class GameState (val playerCount: Int, val grid: Grid){
         return null
     }
     fun move(unit:Unit, xPos:Float, yPos:Float) :Boolean{
-        Log.w("GameState" ,"unit move attempt $xPos, $yPos")
+
         var finalXPos = xPos
         var finalYPos = yPos
         if(xPos<(unit.size/2)) finalXPos=(unit.size/2)
@@ -35,7 +35,7 @@ class GameState (val playerCount: Int, val grid: Grid){
         if(xPos>maxX) finalXPos=maxX
         if(yPos>maxY) finalYPos=maxY
         var xDist = (unit.xPos-finalXPos)*(unit.xPos-finalXPos)
-        var yDist = (unit.xPos-finalYPos)*(unit.xPos-finalYPos)
+        var yDist = (unit.yPos-finalYPos)*(unit.yPos-finalYPos)
         val dist = sqrt(xDist+yDist)
 
         if(dist>unit.speed){
@@ -44,10 +44,11 @@ class GameState (val playerCount: Int, val grid: Grid){
             val yMove = (finalYPos-unit.yPos)*proportion
             finalXPos = unit.xPos+xMove
             finalYPos = unit.yPos+yMove
+            Log.w("GameState" ,"unit move attempt $dist, $proportion, $xPos, $yPos, ${unit.xPos}, ${unit.yPos}, $finalXPos, $finalYPos, ${unit.player}")
         }
         val impactedUnit = checkPotentialUnitIntersections(unit, unit.size, finalXPos, finalYPos)
         if(impactedUnit!=null){
-            Log.w("GameState" ,"UNIT IMPACT!?!?!?!?!? $xPos, $yPos")
+            //Log.w("GameState" ,"UNIT IMPACT!?!?!?!?!? $xPos, $yPos")
             if(unit.team==impactedUnit.team){
                 //reject move
                 //TODO snap to position
@@ -59,8 +60,8 @@ class GameState (val playerCount: Int, val grid: Grid){
         }else {
             val impactedCity = checkPotentialCityIntersections(unit.size, finalXPos, finalYPos)
             if(impactedCity!=null){
-                Log.w("GameState" ,"city impact $xPos, $yPos")
                 if(unit.team!=impactedCity.team){
+                    Log.w("GameState" ,"city impact $xPos, $yPos")
                     razeCity(impactedCity)
                 }
             }
@@ -68,7 +69,7 @@ class GameState (val playerCount: Int, val grid: Grid){
         unit.xPos = finalXPos
         unit.yPos = finalYPos
         grid.drawGameState()
-        if(unit.faction != Faction.UNDEAD){
+        if(unit.faction == Faction.HUMAN){
             hasMove.remove(unit)
             if(hasMove.isEmpty()) setTurn(1)//Make AI turn
         }
@@ -82,7 +83,7 @@ class GameState (val playerCount: Int, val grid: Grid){
         cities.remove(city)
         if(checkFactionEliminated(city.player)){
             //(TODO)remove player control/set feral once MP
-
+            grid.endGame((city.player+1)%2)
         }
     }
     private fun checkFactionEliminated(player:Int):Boolean{
@@ -121,10 +122,18 @@ class GameState (val playerCount: Int, val grid: Grid){
     //Who's move
     fun setTurn(player: Int){
         hasMove.clear()
+        runProduction(player)
         initializeMovement(player)
         if(player==1) {//If is AI
             runAIMovement(player)
         }
+        Log.w("GameState" , "hasMove $hasMove.size")
+        if (hasMove.isEmpty()){
+            Log.w("GameState" , "hasMove empty")
+            setTurn((player+1)%playerCount)
+            Log.w("GameState" , "Recursive call completed")
+        }
+        grid.imageV.invalidate()
     }
     private fun initializeMovement(player: Int){
         for (unit in units){
@@ -150,6 +159,27 @@ class GameState (val playerCount: Int, val grid: Grid){
             }
         }
         setTurn(0)
+    }
+    private fun runProduction(player: Int){
+        if (player==0){
+            for (city in cities){
+                if (city.player != player){
+                    continue
+                }
+                if(city.productionProgress == 3){
+                    createUnit(city.xPos, city.yPos, 0, Faction.HUMAN)
+                    city.productionProgress = 0
+                }else city.productionProgress++
+            }
+        }
+        else{
+            for (city in cities){
+                if (city.player != player){
+                    continue
+                }
+                for(i in 1..2) createUnit(city.xPos, city.yPos+(-150f+100f*i), 1, Faction.UNDEAD)
+            }
+        }
     }
 
     //Who has movement left

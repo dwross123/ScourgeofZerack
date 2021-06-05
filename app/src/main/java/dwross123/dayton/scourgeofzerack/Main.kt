@@ -5,16 +5,18 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.Toast
 
 const val EXTRA_MESSAGE = "dwross123.dayton.scourgeofzerack.MESSAGE"
 class Main : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val victoryMessage = intent.getStringExtra(EXTRA_MESSAGE)
+        Toast.makeText(applicationContext,victoryMessage,Toast.LENGTH_LONG).show()
 
-
-        val new_game = findViewById<Button>(R.id.new_game)
-        new_game.setOnClickListener(object : View.OnClickListener {
+        val newGame = findViewById<Button>(R.id.new_game)
+        newGame.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
                 val message = 0
                 val intent = Intent(this@Main, Grid::class.java).apply {
@@ -24,7 +26,7 @@ class Main : AppCompatActivity() {
             }
         })
 
-        val contine_game = findViewById<Button>(R.id.new_game)
+/*        val contine_game = findViewById<Button>(R.id.new_game)
         new_game.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
                 val message = 1
@@ -33,7 +35,7 @@ class Main : AppCompatActivity() {
                 }
                 startActivity(intent)
             }
-        })
+        })*/
 
         /** Called when the user taps the Send button */
         fun sendMessage(view: View) {
