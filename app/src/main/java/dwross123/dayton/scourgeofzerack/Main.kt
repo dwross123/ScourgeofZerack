@@ -60,10 +60,5 @@ class Main : AppCompatActivity() {
                 startActivity(intent)
             }
         })*/
-
-        /** Called when the user taps the Send button */
-        fun sendMessage(view: View) {
-            // Do something in response to button
-        }
     }
 }
