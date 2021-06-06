@@ -13,26 +13,23 @@
             android:name=".Main"
             android:label="@string/title_activity_main"
             android:theme="@style/Theme.ScourgeOfZerack.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".Grid"
             android:label="@string/title_activity_grid"
-            android:theme="@style/Theme.ScourgeOfZerack.NoActionBar" />
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.ScourgeOfZerack.NoActionBar" >
             android:parentActivityName=".Main"
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+        </activity>
         <activity
             android:name=".SettingsActivity"
             android:label="@string/app_name">
             android:parentActivityName=".Main"
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
     </application>
 
