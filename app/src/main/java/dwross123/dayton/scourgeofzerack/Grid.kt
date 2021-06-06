@@ -21,8 +21,10 @@ class Grid : AppCompatActivity() {
     val gameState = GameState(2, this)
     lateinit var humanCity: Bitmap
     lateinit var humanWarrior: Bitmap
+    lateinit var humanGrave: Bitmap
     lateinit var undeadCity: Bitmap
     lateinit var undeadWarrior: Bitmap
+    lateinit var undeadGrave: Bitmap
     lateinit var canvas: Canvas
     var width =0
     var height =0
@@ -43,8 +45,10 @@ class Grid : AppCompatActivity() {
         height = displayMetrics.heightPixels
         humanCity = BitmapFactory.decodeResource(getResources(), R.drawable.h_city_idle_1)
         humanWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.warrior_idle_1)
+        humanGrave = BitmapFactory.decodeResource(getResources(), R.drawable.warrior_dead)
         undeadCity = BitmapFactory.decodeResource(getResources(), R.drawable.z_city_idle_1)
-        undeadWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.basic_undead_idle1)
+        undeadWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.basic_dead)
+        undeadGrave = BitmapFactory.decodeResource(getResources(), R.drawable.warrior_idle_1)
         gameState.citySize = humanCity.width.toFloat()
         gameState.unitSize = humanWarrior.width.toFloat()
 
@@ -119,6 +123,9 @@ class Grid : AppCompatActivity() {
                 Faction.UNDEAD -> canvas.drawBitmap(undeadCity, left, top, null)
             }
         }
+    }
+    private fun drawGraves(){
+
     }
     private fun drawUnits(){
         for (unit in gameState.units){
