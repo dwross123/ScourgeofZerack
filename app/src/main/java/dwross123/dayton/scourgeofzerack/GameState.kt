@@ -1,6 +1,5 @@
 package dwross123.dayton.scourgeofzerack
 
-import android.util.Log
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -15,6 +14,8 @@ class GameState (val playerCount: Int, val grid: Grid){
     var zombiesKilled = 0
     var warriorsLost = 0
     var currentZombies = 0
+    var unitSize = 0f
+    var citySize = 0f
 
     fun findNearby(xPos: Float, yPos: Float):Clickable?{ //Biased towards units
         val areaChecked = 50f
@@ -217,7 +218,7 @@ class GameState (val playerCount: Int, val grid: Grid){
     }
     //Creation
     fun createUnit(xPos: Float, yPos: Float, player: Int, faction: Faction):Boolean{
-        val unit = Unit(xPos, yPos, player, faction)
+        val unit = Unit(xPos, yPos, player, faction, unitSize)
         if(checkPotentialUnitIntersections(null, unit.size, xPos, yPos)==null) {
             if(unit.faction == Faction.UNDEAD) currentZombies++
             units.add(unit)
@@ -226,7 +227,7 @@ class GameState (val playerCount: Int, val grid: Grid){
         return false
     }
     fun createCity(xPos: Float, yPos: Float, player: Int, faction: Faction){
-        val city = City(xPos, yPos, player, faction)
+        val city = City(xPos, yPos, player, faction, citySize)
         cities.add(city)
     }
 }

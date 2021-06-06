@@ -8,13 +8,10 @@ import android.graphics.drawable.shapes.OvalShape
 import android.graphics.drawable.shapes.RectShape
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.MotionEvent
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import dwross123.dayton.scourgeofzerack.databinding.ActivityGridBinding
-import java.util.*
 
 
 class Grid : AppCompatActivity() {
@@ -48,18 +45,20 @@ class Grid : AppCompatActivity() {
         humanWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.warrior_idle_1)
         undeadCity = BitmapFactory.decodeResource(getResources(), R.drawable.z_city_idle_1)
         undeadWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.basic_undead_idle1)
+        gameState.citySize = humanCity.width.toFloat()
+        gameState.unitSize = humanWarrior.width.toFloat()
 
         // set bitmap as background to ImageView
         imageV = findViewById<ImageView>(R.id.imageView)
-        val cityOffSetX = 100f
-        val unitOffSetX = 137.5f
+        val cityOffSetX = humanCity.width.toFloat()
+        val unitOffSetX = humanCity.width+humanWarrior.width/2f
         val offSetY = height/2f
         gameState.createCity(cityOffSetX, offSetY, 0, Faction.HUMAN)
         gameState.createCity(width-cityOffSetX, offSetY, 1, Faction.UNDEAD)
         gameState.createUnit(unitOffSetX, offSetY, 0, Faction.HUMAN)
-        for(i in -3..1){
+        for(i in -1..1){
             for(j in -2..2){
-                gameState.createUnit((width-unitOffSetX+(i*100f)), (offSetY+(j*100f)), 1, Faction.UNDEAD)
+                gameState.createUnit((width-unitOffSetX+(i*gameState.unitSize*1.02f)), (offSetY+(j*gameState.unitSize*1.02f)), 1, Faction.UNDEAD)
             }
         }
         drawGameState()
@@ -76,20 +75,8 @@ class Grid : AppCompatActivity() {
         if(selected != null && selected is Unit){
             if(gameState.move(selected as Unit, xPos, yPos)) selected = null
             drawGameState()
-            Toast.makeText(applicationContext,"x = $xPos y = $yPos",Toast.LENGTH_SHORT).show()
             return true
         }
-        //Toast.makeText(applicationContext,"x = $xPos y = $yPos",Toast.LENGTH_LONG).show()
-        var left = e.x-10
-        var top = e.y-10
-        var right = e.x+10
-        var bottom = e.y+10
-
-        // draw oval shape to canvas
-        /*var shapeDrawable = ShapeDrawable(OvalShape())
-        shapeDrawable.setBounds( left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
-        shapeDrawable.getPaint().setColor(Color.parseColor("#009191"))
-        shapeDrawable.draw(canvas)*/
         selected = gameState.findNearby(xPos, yPos) //Biased towards units
         val thing:Clickable? = selected
         if(thing != null){
@@ -102,6 +89,7 @@ class Grid : AppCompatActivity() {
     fun drawGameState(){
         val bitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         canvas = Canvas(bitmap)
+        drawBackground()
         //drawTerrain()
         drawCities()
         drawUnits()
@@ -111,6 +99,13 @@ class Grid : AppCompatActivity() {
         drawSelected()
         imageV.background = BitmapDrawable(getResources(), bitmap)
         imageV.invalidate()
+    }
+    private fun drawBackground(){
+        val shape = ShapeDrawable(RectShape())
+        shape.setBounds(0, 0, width, height)
+        shape.getPaint().setColor(Color.BLACK)
+        shape.draw(canvas)
+
     }
     private fun drawTerrain(){
         //TODO terrain
