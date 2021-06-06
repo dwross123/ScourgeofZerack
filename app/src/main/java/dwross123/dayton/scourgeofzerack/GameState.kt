@@ -14,6 +14,7 @@ class GameState (val playerCount: Int, val grid: Grid){
     var gameOver = false
     var zombiesKilled = 0
     var warriorsLost = 0
+    var currentZombies = 0
 
     fun findNearby(xPos: Float, yPos: Float):Clickable?{ //Biased towards units
         val areaChecked = 50f
@@ -82,6 +83,7 @@ class GameState (val playerCount: Int, val grid: Grid){
     private fun killUnit(unit: Unit){
         if(unit.player==1){
             zombiesKilled++
+            currentZombies--
         }else warriorsLost++
         units.remove(unit)
     }
@@ -176,7 +178,9 @@ class GameState (val playerCount: Int, val grid: Grid){
                 }
                 if(city.productionProgress == 3){
                     //humanProd
-                    createUnit(city.xPos, city.yPos, 0, Faction.HUMAN)
+                    if(!createUnit(city.xPos, city.yPos, city.player, city.faction)){
+                        createUnitOffCenter(city)
+                    }
                     city.productionProgress = 0
                 }else city.productionProgress++
             }
@@ -187,16 +191,39 @@ class GameState (val playerCount: Int, val grid: Grid){
                     continue
                 }
                 //for(i in 1..2) yPos+(-150f+100f*i) //for doable production
-                createUnit(city.xPos, city.yPos, 1, Faction.UNDEAD)
+                if(city.productionProgress == 1) {
+                    //Undead production
+                    if (!createUnit(city.xPos, city.yPos, city.player, city.faction)) {
+                        createUnitOffCenter(city)
+                    }
+                    city.productionProgress = 0
+                }else city.productionProgress++
             }
         }
     }
+    private fun createUnitOffCenter(city: City){
+        val cityLeft = city.xPos-(city.size/2)
+        val cityTop = city.yPos-(city.size/2)
+        var created = false
+        for (x in 0..(city.size.toInt()/5)){
+            for (y in 0..(city.size.toInt()/5)){
+                if(createUnit(cityLeft+5f*x, cityTop+5f*y, city.player, city.faction)) {
+                    created = true
+                    break
+                }
+            }
+            if(created) break
+        }
+    }
     //Creation
-    fun createUnit(xPos: Float, yPos: Float, player: Int, faction: Faction){
+    fun createUnit(xPos: Float, yPos: Float, player: Int, faction: Faction):Boolean{
         val unit = Unit(xPos, yPos, player, faction)
         if(checkPotentialUnitIntersections(null, unit.size, xPos, yPos)==null) {
+            if(unit.faction == Faction.UNDEAD) currentZombies++
             units.add(unit)
-        } //Todo have unit move off city
+            return true
+        }
+        return false
     }
     fun createCity(xPos: Float, yPos: Float, player: Int, faction: Faction){
         val city = City(xPos, yPos, player, faction)

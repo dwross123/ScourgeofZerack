@@ -65,10 +65,6 @@ class Grid : AppCompatActivity() {
         drawGameState()
         gameState.setTurn(0)
     }
-
-/*    fun moveSelected(unit: Unit) {
-
-    }*/
     override fun onTouchEvent(e: MotionEvent): Boolean {
         val timeSinceClick = System.currentTimeMillis()-lastClickTime
         lastClickTime = System.currentTimeMillis()
@@ -180,6 +176,8 @@ class Grid : AppCompatActivity() {
         canvas.drawText("Zombies killed ${gameState.zombiesKilled}", 0f, height-paint.textSize, paint)
         paint.color = Color.RED
         canvas.drawText("Warriors lost ${gameState.warriorsLost}", 200f, height-paint.textSize, paint)
+        paint.color = Color.GREEN
+        canvas.drawText("Current amount of zombies ${gameState.currentZombies}", 400f, height-paint.textSize, paint)
     }
     fun endGame(player:Int){
         val intent = Intent(this, Main::class.java).apply {
