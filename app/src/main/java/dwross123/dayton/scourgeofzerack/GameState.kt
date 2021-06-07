@@ -4,9 +4,10 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 
-class GameState (val playerCount: Int, val grid: Grid){
+class GameState (val playerCount: Int, val grid: Grid, turnsPerZombieBatch: Int, zombiesPerBatch: Int, turnsPerPlayerBatch: Int, warriorsPerBatch: Int ){
 
     var units = ArrayList<Unit>()
+    var graves = ArrayList<Grave>()
     var cities = ArrayList<City>()
     var playerTurn = 0
     var hasMove = HashSet<Clickable>()
@@ -85,7 +86,11 @@ class GameState (val playerCount: Int, val grid: Grid){
         if(unit.player==1){
             zombiesKilled++
             currentZombies--
-        }else warriorsLost++
+            graves.add(Grave(unit.xPos,unit.yPos,unit.size,unit.faction))
+        }else{
+            warriorsLost++
+            graves.add(Grave(unit.xPos,unit.yPos,unit.size,unit.faction))
+        }
         units.remove(unit)
     }
     private fun razeCity(city: City){
@@ -133,11 +138,11 @@ class GameState (val playerCount: Int, val grid: Grid){
     fun setTurn(player: Int){
         if(gameOver) return
         hasMove.clear()
-        runProduction(player)
         initializeMovement(player)
         if(player==1) {//If is AI
             runAIMovement(player)
         }
+        runProduction(player)
         //Log.w("GameState" , "hasMove $hasMove.size")
         if (hasMove.isEmpty()){
             //Log.w("GameState" , "hasMove empty")
@@ -172,34 +177,34 @@ class GameState (val playerCount: Int, val grid: Grid){
         setTurn(0)
     }
     private fun runProduction(player: Int){
-        if (player==0){
+        if (player==0){//human production
             for (city in cities){
                 if (city.player != player){
                     continue
                 }
+
                 if(city.productionProgress == 3){
-                    //humanProd
-                    if(!createUnit(city.xPos, city.yPos, city.player, city.faction)){
-                        createUnitOffCenter(city)
-                    }
+                    placeUnitOnCity(city)
                     city.productionProgress = 0
                 }else city.productionProgress++
             }
         }
-        else{
+        else{//Undead production
             for (city in cities){
                 if (city.player != player){
                     continue
                 }
                 //for(i in 1..2) yPos+(-150f+100f*i) //for doable production
                 if(city.productionProgress == 1) {
-                    //Undead production
-                    if (!createUnit(city.xPos, city.yPos, city.player, city.faction)) {
-                        createUnitOffCenter(city)
-                    }
-                    city.productionProgress = 0
+                    placeUnitOnCity(city)
+                    //city.productionProgress = 0
                 }else city.productionProgress++
             }
+        }
+    }
+    private fun placeUnitOnCity(city: City){
+        if (!createUnit(city.xPos, city.yPos, city.player, city.faction)) {
+            createUnitOffCenter(city)
         }
     }
     private fun createUnitOffCenter(city: City){

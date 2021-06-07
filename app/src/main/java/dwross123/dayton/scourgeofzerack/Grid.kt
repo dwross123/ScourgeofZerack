@@ -13,12 +13,11 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import dwross123.dayton.scourgeofzerack.databinding.ActivityGridBinding
 
-
 class Grid : AppCompatActivity() {
 
     lateinit var binding: ActivityGridBinding
     lateinit var imageV:ImageView
-    val gameState = GameState(2, this)
+    val gameState = GameState(2, this, 0, 0, 0, 0)
     lateinit var humanCity: Bitmap
     lateinit var humanWarrior: Bitmap
     lateinit var humanGrave: Bitmap
@@ -36,7 +35,7 @@ class Grid : AppCompatActivity() {
 
         binding = ActivityGridBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        val message = intent.getIntExtra(EXTRA_MESSAGE, -1)
+        //val message = intent.getIntExtra(EXTRA_MESSAGE, -1)
 
         val displayMetrics = DisplayMetrics()
         windowManager.getDefaultDisplay().getMetrics(displayMetrics)
@@ -47,8 +46,8 @@ class Grid : AppCompatActivity() {
         humanWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.warrior_idle_1)
         humanGrave = BitmapFactory.decodeResource(getResources(), R.drawable.warrior_dead)
         undeadCity = BitmapFactory.decodeResource(getResources(), R.drawable.z_city_idle_1)
-        undeadWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.basic_dead)
-        undeadGrave = BitmapFactory.decodeResource(getResources(), R.drawable.warrior_idle_1)
+        undeadWarrior = BitmapFactory.decodeResource(getResources(), R.drawable.basic_undead2_idle2)
+        undeadGrave = BitmapFactory.decodeResource(getResources(), R.drawable.basic_dead)
         gameState.citySize = humanCity.width.toFloat()
         gameState.unitSize = humanWarrior.width.toFloat()
 
@@ -96,6 +95,7 @@ class Grid : AppCompatActivity() {
         drawBackground()
         //drawTerrain()
         drawCities()
+        drawGraves()
         drawUnits()
         drawRage()
         drawKills()
@@ -119,13 +119,27 @@ class Grid : AppCompatActivity() {
             val left = city.xPos-(city.size/2f)
             val top = city.yPos-(city.size/2f)
             when (city.faction) {
-                Faction.HUMAN -> canvas.drawBitmap(humanCity, left, top, null)
-                Faction.UNDEAD -> canvas.drawBitmap(undeadCity, left, top, null)
+                Faction.HUMAN -> {
+                    canvas.drawBitmap(humanCity, left, top, null)
+                    drawBorder(city, Color.BLUE)
+                }
+                Faction.UNDEAD -> {
+                    canvas.drawBitmap(undeadCity, left, top, null)
+                    drawBorder(city, Color.RED)
+                    //drawCityRange(city, Color.RED)
+                }
             }
         }
     }
     private fun drawGraves(){
-
+        for (grave in gameState.graves){
+            val left = grave.xPos-(grave.size/2f)
+            val top = grave.yPos-(grave.size/2f)
+            when (grave.faction) {
+                Faction.HUMAN -> canvas.drawBitmap(humanGrave, left, top, null)
+                Faction.UNDEAD -> canvas.drawBitmap(undeadGrave, left, top, null)
+            }
+        }
     }
     private fun drawUnits(){
         for (unit in gameState.units){
@@ -141,25 +155,35 @@ class Grid : AppCompatActivity() {
         val thing = selected
         if(thing != null) {
             drawBorder(thing, Color.GREEN)
+            drawRange(thing, Color.GREEN)
         }
     }
     private fun drawMovable(){
         for(target in gameState.hasMove){
             drawBorder(target, Color.BLUE)
+            drawRange(target, Color.BLUE)
         }
     }
     private fun drawRage(){
         for (unit in gameState.units){
             when (unit.faction) {
-                Faction.HUMAN -> continue
-                Faction.UNDEAD -> drawBorder(unit, Color.RED)
+                Faction.HUMAN -> drawBorder(unit, Color.BLUE)
+                Faction.UNDEAD -> {
+                    drawBorder(unit, Color.RED)
+                    drawRange(unit, Color.RED)
+                }
             }
         }
     }
     private fun drawBorder(target: Clickable, color: Int){
         drawShape(ShapeDrawable(RectShape()), color, target.size/2, target)
+    }
+    private fun drawRange(target: Clickable, color: Int){
         drawShape(ShapeDrawable(OvalShape()), color, (target.size/2)+target.speed, target)
     }
+ /*   private fun drawCityRange(target: City, color: Int){
+        drawShape(ShapeDrawable(OvalShape()), color, (target.size*7/4), target)
+    }*/
     private fun drawShape(shape: ShapeDrawable, color: Int, size: Float, target:Clickable){//size is predivided
         var left = (target.xPos - size).toInt()
         var top = (target.yPos - size).toInt()
